@@ -32,8 +32,8 @@ defmodule OrderBook.DB do
 
         for table <- @tables do
           Mnesia.create_table(table,
-	    type: :ordered_set,
-	    attributes: [:price_level, :current],
+            type: :ordered_set,
+            attributes: [:price_level, :current],
             disc_copies: [Node.self()]
           )
         end
@@ -137,10 +137,12 @@ defmodule OrderBook.DB do
 
     # transaction HERE 
     Mnesia.dirty_delete(bid_or_ask, price_level)
+
     for {level, data} <- upper_levels do
       Mnesia.dirty_write({bid_or_ask, level - 1, data})
       Mnesia.dirty_delete(bid_or_ask, level)
     end
+
     :ok
   end
 
