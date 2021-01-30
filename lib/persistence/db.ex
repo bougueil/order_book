@@ -136,16 +136,19 @@ defmodule OrderBook.DB do
     # transaction HERE 
     Mnesia.dirty_delete(bid_or_ask, price_level)
 
-    for {level, data} <- upper_levels do
-      Mnesia.dirty_write({bid_or_ask, level - 1, data})
-    end
+    highest_level =
+      Enum.reduce(upper_levels, 0, fn {level, data}, acc ->
+        Mnesia.dirty_write({bid_or_ask, level - 1, data})
+        level
+      end)
 
+    Mnesia.dirty_delete(bid_or_ask, highest_level)
     :ok
   end
 
   @doc """
   read book at level: level
-  we will only considering price levels that are less than or equal than the specified book_depth.
+  we will only considering price levels that are less than or equal (le) than the specified book_depth.
   """
   def read_le(bid_or_ask, book_depth) do
     Mnesia.dirty_select(
