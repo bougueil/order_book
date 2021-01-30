@@ -32,7 +32,8 @@ defmodule OrderBook.DB do
 
         for table <- @tables do
           Mnesia.create_table(table,
-            attributes: [:price_level, :current],
+	    type: :ordered_set,
+	    attributes: [:price_level, :current],
             disc_copies: [Node.self()]
           )
         end
