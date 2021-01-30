@@ -68,7 +68,7 @@ defmodule OrderBook.DB do
   @doc """
   only for debug
   """
-  def dump(number_records \\ 5) do
+  def dump(number_records \\ 100) do
     for table <- @tables do
       all = :ets.tab2list(table)
       list = Enum.take(all, number_records) |> Enum.sort()
@@ -119,6 +119,7 @@ defmodule OrderBook.DB do
 
     for {level, data} <- upper_levels do
       Mnesia.dirty_write({bid_or_ask, level + 1, data})
+      Mnesia.dirty_delete(bid_or_ask, level)
     end
 
     :ok
@@ -136,14 +137,10 @@ defmodule OrderBook.DB do
 
     # transaction HERE 
     Mnesia.dirty_delete(bid_or_ask, price_level)
-
-    highest_level =
-      Enum.reduce(upper_levels, 0, fn {level, data}, acc ->
-        Mnesia.dirty_write({bid_or_ask, level - 1, data})
-        level
-      end)
-
-    Mnesia.dirty_delete(bid_or_ask, highest_level)
+    for {level, data} <- upper_levels do
+      Mnesia.dirty_write({bid_or_ask, level - 1, data})
+      Mnesia.dirty_delete(bid_or_ask, level)
+    end
     :ok
   end
 
