@@ -35,6 +35,7 @@ defmodule Exchange do
     {bids, asks} = GenServer.call(pid, {:order_book, book_depth})
 
     # we could avoid this re-calculation
+    # but lists are already ordered
     {min_bids, _} = Enum.min(bids)
     {max_bids, _} = Enum.max(bids)
     {min_asks, _} = Enum.min(asks)
